@@ -17,7 +17,13 @@
     a.card:hover, a.card:focus-visible { border-color: var(--seal); transform: translateY(-2px); outline: none; }
     a.card h2 { font-weight: normal; font-size: 26px; margin: 0 0 8px; }
     a.card span { color: var(--muted); font-size: 14px; line-height: 1.5; }
-    @media (max-width: 560px) { .choices { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
+    .costs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 14px; }
+    .cost { font-size: 14px; color: var(--muted); text-align: center; margin: 0; }
+    .cost strong { color: var(--ink); font-weight: normal; font-size: 18px; }
+    figure.art { margin: 56px 0 0; }
+    figure.art img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+    figure.art figcaption { color: var(--muted); font-size: 13px; font-style: italic; margin-top: 10px; }
+    @media (max-width: 560px) { .choices, .costs { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
   </style>
 </head>
 <body>
@@ -35,6 +41,14 @@
         <span>A shorter take on the same story, 48 seconds, in a single HTML file.</span>
       </a>
     </nav>
+    <div class="costs">
+      <p class="cost">Made with Opus 5.5 · <strong>$6.8</strong></p>
+      <p class="cost">Made with Sol 6.1 · <strong>$1.50</strong></p>
+    </div>
+    <figure class="art">
+      <img src="./assets/film-art-preview.png" alt="Samurai in a misty ink landscape beside a torii gate, with the title The Last Blossom" loading="lazy" width="1600" height="900">
+      <figcaption>The original prompt art.</figcaption>
+    </figure>
   </main>
 </body>
 </html>
