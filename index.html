@@ -20,10 +20,13 @@
     .costs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 14px; }
     .cost { font-size: 14px; color: var(--muted); text-align: center; margin: 0; }
     .cost strong { color: var(--ink); font-weight: normal; font-size: 18px; }
-    figure.art { margin: 56px 0 0; }
-    figure.art img { display: block; width: 100%; max-width: 661px; height: auto; margin: 0 auto; border: 1px solid var(--line); }
-    figure.art figcaption { color: var(--muted); font-size: 13px; font-style: italic; margin-top: 10px; }
-    @media (max-width: 560px) { .choices, .costs { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
+    .prompt { margin: 56px 0 0; text-align: left; border: 1px solid var(--line); background: #faf8f3; padding: 32px 36px; font-size: 15px; line-height: 1.6; }
+    .prompt h2 { font-weight: normal; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 20px; }
+    .prompt p { margin: 0 0 12px; }
+    .prompt h3 { font-size: 15px; font-weight: bold; margin: 20px 0 8px; }
+    .prompt ul { margin: 0 0 12px; padding-left: 22px; }
+    .prompt li { margin: 4px 0; }
+    @media (max-width: 560px) { .choices, .costs { grid-template-columns: 1fr; } h1 { font-size: 32px; } .prompt { padding: 24px 20px; } }
   </style>
 </head>
 <body>
@@ -45,10 +48,38 @@
       <p class="cost">Made with Opus 5.5 · <strong>$6.8</strong></p>
       <p class="cost">Made with Sol 6.1 · <strong>$1.50</strong></p>
     </div>
-    <figure class="art">
-      <img src="./assets/original-prompt.png" alt="The original prompt: create a cinematic 30–60 second animated samurai short in HTML, CSS and JavaScript, in Japanese sumi-e ink style" loading="lazy" width="661" height="724">
-      <figcaption>The original prompt.</figcaption>
-    </figure>
+    <section class="prompt" aria-labelledby="prompt-title">
+      <h2 id="prompt-title">The original prompt</h2>
+      <p>Create a cinematic 30–60 second animated short film about a samurai, built entirely using HTML, CSS, and JavaScript.</p>
+      <p>You are responsible for writing the story, designing the characters, directing the scenes, and implementing the animation.</p>
+      <h3>Story requirements:</h3>
+      <ul>
+        <li>Tell an original, emotionally compelling story about a samurai.</li>
+        <li>Follow a recognizable hero's journey arc: introduction, challenge, struggle or transformation, and resolution.</li>
+        <li>Make the story understandable primarily through visual storytelling rather than dialogue.</li>
+        <li>Include multiple distinct scenes, meaningful character moment, and at least one visually impressive action sequence.</li>
+        <li>Deliver a satisfying ending within 30–60 seconds.</li>
+      </ul>
+      <h3>Art direction — Japanese ink painting:</h3>
+      <ul>
+        <li>The entire film should resemble traditional Japanese sumi-e ink wash painting brought to life.</li>
+        <li>Use expressive black brush strokes on textured, off-white Japanese paper.</li>
+        <li>Keep the palette predominantly black, white, and grey, with extremely limited accent colours if necessary.</li>
+        <li>Incorporate ink bleeding, brush textures, flowing fabric, wind, ink splashes, and atmospheric effects.</li>
+        <li>Emphasize strong silhouettes, dramatic compositions, negative space, and cinematic camera movement.</li>
+        <li>Make the visuals feel hand-painted, artistic, and intentional rather than generic digital animation.</li>
+      </ul>
+      <h3>Animation requirements:</h3>
+      <ul>
+        <li>Use HTML, CSS, JavaScript, Canvas, or SVG.</li>
+        <li>Cinematic 16:9 widescreen presentation.</li>
+        <li>Smooth character animations, environmental effects, camera movements, and scene transitions.</li>
+        <li>Include Play and Replay controls.</li>
+        <li>The film should automatically play from beginning to end in approximately 30–60 seconds.</li>
+        <li>This must feel like an animated film, NOT a slideshow of static images.</li>
+        <li>Do not use pre-rendered videos or external AI video-generation services. The animation must be rendered through code in the browser.</li>
+      </ul>
+    </section>
   </main>
 </body>
 </html>
