@@ -21,7 +21,7 @@
     .cost { font-size: 14px; color: var(--muted); text-align: center; margin: 0; }
     .cost strong { color: var(--ink); font-weight: normal; font-size: 18px; }
     figure.art { margin: 56px 0 0; }
-    figure.art img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+    figure.art img { display: block; width: 100%; max-width: 661px; height: auto; margin: 0 auto; border: 1px solid var(--line); }
     figure.art figcaption { color: var(--muted); font-size: 13px; font-style: italic; margin-top: 10px; }
     @media (max-width: 560px) { .choices, .costs { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
   </style>
@@ -46,8 +46,8 @@
       <p class="cost">Made with Sol 6.1 · <strong>$1.50</strong></p>
     </div>
     <figure class="art">
-      <img src="./assets/film-art-preview.png" alt="Samurai in a misty ink landscape beside a torii gate, with the title The Last Blossom" loading="lazy" width="1600" height="900">
-      <figcaption>The original prompt art.</figcaption>
+      <img src="./assets/original-prompt.png" alt="The original prompt: create a cinematic 30–60 second animated samurai short in HTML, CSS and JavaScript, in Japanese sumi-e ink style" loading="lazy" width="661" height="724">
+      <figcaption>The original prompt.</figcaption>
     </figure>
   </main>
 </body>
