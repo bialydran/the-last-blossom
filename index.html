@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Last Blossom</title>
+  <style>
+    :root { --paper: #f1eee6; --ink: #242721; --muted: #777970; --line: #d6d3c8; --seal: #984c40; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: Georgia, "Times New Roman", serif; display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+    main { width: min(760px, 100%); text-align: center; }
+    .seal { display: inline-block; width: 52px; height: 52px; line-height: 52px; background: var(--seal); color: var(--paper); font-family: "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif; font-size: 26px; }
+    h1 { font-weight: normal; font-size: 40px; letter-spacing: .04em; margin: 20px 0 8px; }
+    p.lede { color: var(--muted); margin: 0 0 40px; font-style: italic; }
+    .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    a.card { display: block; border: 1px solid var(--line); padding: 28px 24px; text-decoration: none; color: var(--ink); background: #faf8f3; transition: border-color .2s, transform .2s; }
+    a.card:hover, a.card:focus-visible { border-color: var(--seal); transform: translateY(-2px); outline: none; }
+    a.card h2 { font-weight: normal; font-size: 26px; margin: 0 0 8px; }
+    a.card span { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    @media (max-width: 560px) { .choices { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="seal" lang="ja" aria-hidden="true">花</span>
+    <h1>The Last Blossom</h1>
+    <p class="lede">Two ink-wash films, painted in code.</p>
+    <nav class="choices" aria-label="Films">
+      <a class="card" href="./claude/">
+        <h2>Claude</h2>
+        <span>The full animated samurai short, about one minute, with a brush-painted score.</span>
+      </a>
+      <a class="card" href="./sol/">
+        <h2>Sol</h2>
+        <span>A shorter take on the same story, 48 seconds, in a single HTML file.</span>
+      </a>
+    </nav>
+  </main>
+</body>
+</html>

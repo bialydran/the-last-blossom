@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1eee6">
+  <title>The Last Blossom — an ink-wash short film</title>
+  <style>
+    :root { color-scheme: light; --paper: #f1eee6; --ink: #242721; --muted: #777970; --line: #d6d3c8; --seal: #984c40; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--seal); outline-offset: 5px; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .page { width: min(1280px, calc(100% - 96px)); margin: auto; }
+    .masthead { height: 93px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; gap: 13px; align-items: center; }
+    .brand-mark { width: 36px; height: 36px; }
+    .brand-name { font-size: 11px; font-weight: 600; letter-spacing: .23em; }
+    .brand-name span { color: #989b90; margin: 0 5px; font-weight: 400; }
+    .masthead-note { font-family: Georgia, "Times New Roman", serif; font-size: 14px; font-style: italic; color: var(--muted); }
+    .intro { padding: 34px 0 28px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+    .eyebrow { margin: 0 0 12px; font-size: 9px; letter-spacing: .23em; color: var(--muted); text-transform: uppercase; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(30px, 3.4vw, 46px); letter-spacing: -.04em; line-height: 1.05; }
+    h1 em { font-weight: 400; }
+    .intro-right { display: flex; gap: 24px; align-items: center; }
+    .intro-description { font-family: Georgia, "Times New Roman", serif; font-size: 14px; color: #73766b; line-height: 1.55; text-align: right; margin: 0; }
+    .seal { color: var(--seal); border: 1px solid var(--seal); padding: 5px 6px; font-family: Georgia, "Yu Mincho", serif; font-size: 24px; line-height: 1; transform: rotate(-4deg); opacity: .85; }
+    .player { position: relative; }
+    .screen { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #eee9db; box-shadow: 0 0 0 1px #d0cdc1; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .scene-label { position: absolute; left: 2.7%; top: 4.8%; display: flex; align-items: center; gap: 10px; font-size: clamp(8px, .8vw, 10px); color: #42483d; letter-spacing: .19em; pointer-events: none; }
+    .scene-label::before { content: ""; width: 17px; height: 1px; background: currentColor; opacity: .6; }
+    .film-meta { position: absolute; right: 2.7%; top: 4.8%; color: #6e7268; font-size: clamp(8px, .75vw, 9px); letter-spacing: .15em; pointer-events: none; }
+    .end-note { position: absolute; bottom: 7%; left: 0; width: 100%; text-align: center; opacity: 0; transition: opacity .5s; pointer-events: none; font-size: 9px; letter-spacing: .2em; color: #69715f; }
+    .player[data-state="ended"] .end-note { opacity: 1; }
+    .controls { height: 78px; display: flex; align-items: center; gap: 18px; border-bottom: 1px solid var(--line); }
+    .icon-button { flex: none; border: 0; background: transparent; width: 30px; height: 36px; display: grid; place-items: center; cursor: pointer; padding: 0; }
+    .icon-button svg { width: 18px; height: 18px; stroke-width: 1.4; }
+    .icon-button:hover { color: var(--seal); }
+    .play-button { border-radius: 50%; background: var(--ink); color: var(--paper); width: 39px; height: 39px; }
+    .play-button:hover { background: #454c3e; color: var(--paper); }
+    .play-icon, .player:not([data-state="playing"]) .pause-icon { display: none; }
+    .player:not([data-state="playing"]) .play-icon { display: block; }
+    .replay-button { color: #777b6e; }
+    .timeline-wrap { position: relative; display: flex; align-items: center; flex: 1; min-width: 50px; height: 28px; }
+    .timeline-wrap input { position: relative; z-index: 1; -webkit-appearance: none; appearance: none; background: transparent; width: 100%; margin: 0; height: 28px; cursor: pointer; }
+    .timeline-wrap::before { content: ""; position: absolute; width: 100%; height: 2px; background: linear-gradient(to right, #454d3e var(--progress, 0%), #d4d4c9 var(--progress, 0%)); }
+    .timeline-wrap input::-webkit-slider-runnable-track { height: 2px; background: transparent; }
+    .timeline-wrap input::-moz-range-track { height: 2px; background: transparent; }
+    .timeline-wrap input::-webkit-slider-thumb { -webkit-appearance: none; width: 8px; height: 8px; margin-top: -3px; background: #454d3e; border-radius: 50%; border: 0; }
+    .timeline-wrap input::-moz-range-thumb { width: 8px; height: 8px; background: #454d3e; border-radius: 50%; border: 0; }
+    .timeline-tick { position: absolute; width: 1px; height: 7px; background: #b0b4a5; top: 10px; pointer-events: none; }
+    .timecode { font-size: 10px; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: .07em; color: var(--muted); }
+    .timecode span:first-child { color: var(--ink); }
+    .timecode .time-divider { margin: 0 7px; color: #b3b4a9; }
+    .control-divider { width: 1px; height: 20px; background: var(--line); }
+    .sound-on { display: none; }
+    .sound-button[aria-pressed="true"] .sound-off { display: none; }
+    .sound-button[aria-pressed="true"] .sound-on { display: block; }
+    .afterword { display: flex; justify-content: space-between; align-items: flex-start; padding: 26px 0 25px; gap: 32px; }
+    .afterword-quote { font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-style: italic; margin: 0 0 8px; }
+    .afterword-note { margin: 0; color: var(--muted); font-size: 9px; letter-spacing: .09em; line-height: 1.7; }
+    .chapters { display: flex; gap: 25px; padding: 2px 0; }
+    .chapter { background: none; border: 0; padding: 0; cursor: pointer; text-align: left; color: #929688; transition: color .25s; }
+    .chapter span { display: block; font-size: 8px; letter-spacing: .13em; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+    .chapter strong { font-size: 10px; font-weight: 400; letter-spacing: .02em; white-space: nowrap; }
+    .chapter[aria-current="true"], .chapter:hover { color: var(--ink); }
+    .chapter[aria-current="true"] span { color: var(--seal); }
+    .colophon { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding: 18px 0 24px; color: #85897c; font-size: 8px; letter-spacing: .15em; text-transform: uppercase; }
+    .keyboard-help { font-size: 8px; letter-spacing: .06em; text-transform: none; }
+    .error { margin: 0; padding: 12px 0; color: #8d352d; font-size: 12px; line-height: 1.5; }
+    .error:empty { display: none; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .player:fullscreen { background: var(--paper); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 0 max(18px, calc((100vw - (100vh - 78px) * 16 / 9) / 2)); }
+    .player:fullscreen .screen { width: 100%; max-height: calc(100vh - 78px); flex: none; }
+    .player:fullscreen .controls { flex: none; }
+    @media (min-width: 1500px) { .page { width: min(1320px, calc(100% - 160px)); } }
+    @media (max-width: 760px) {
+      .page { width: calc(100% - 40px); }
+      .masthead { height: 72px; }
+      .masthead-note { font-size: 12px; }
+      .intro { padding: 26px 0 22px; }
+      .intro-description { font-size: 12px; }
+      .intro-right { gap: 14px; }
+      .seal { font-size: 20px; }
+      .controls { height: 68px; gap: 11px; }
+      .afterword { flex-direction: column; gap: 24px; }
+      .chapters { width: 100%; justify-content: space-between; gap: 12px; }
+      .keyboard-help { display: none; }
+    }
+    @media (max-width: 440px) {
+      .page { width: calc(100% - 28px); }
+      .masthead-note { display: none; }
+      .intro-description { display: none; }
+      .eyebrow { font-size: 8px; }
+      .controls { gap: 8px; }
+      .play-button { width: 34px; height: 34px; }
+      .replay-button { width: 24px; }
+      .timecode { font-size: 9px; }
+      .timecode .time-divider { margin: 0 3px; }
+      .control-divider { display: none; }
+      .icon-button:not(.play-button):not(.replay-button) { width: 27px; }
+      .film-meta { display: none; }
+      .colophon { font-size: 7px; letter-spacing: .08em; gap: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 42 42" aria-hidden="true">
+          <path d="M31 8C23 1 8 6 5 18C1 30 15 39 27 34C38 30 40 17 31 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".86"/>
+          <path d="M30 7C17 0 4 12 6 24C8 37 29 39 35 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".6"/>
+          <path d="M14 25L21 14L27 25M17 22H24" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <div class="brand-name">INK <span>/</span> MOTION</div>
+      </div>
+      <div class="masthead-note">Small stories. Lasting impressions.</div>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="film-heading">
+        <div>
+          <p class="eyebrow">An original animated short &nbsp; / &nbsp; No. 001</p>
+          <h1 id="film-heading">The Last <em>Blossom</em></h1>
+        </div>
+        <div class="intro-right">
+          <p class="intro-description">A warrior. A storm. A different kind of courage.<br>48 seconds, painted in ink.</p>
+          <span class="seal" lang="ja" aria-label="Blossom seal">花</span>
+        </div>
+      </section>
+      <section class="player" id="player" data-state="playing" aria-label="The Last Blossom film player">
+        <div class="screen" id="screen">
+          <canvas id="film" aria-label="Animated ink-wash samurai film" aria-describedby="film-description">
+            Your browser needs Canvas support to play this film.
+          </canvas>
+          <div class="scene-label" id="scene-label">I &nbsp; / &nbsp; THE RETURN</div>
+          <div class="film-meta">SUMI-E &nbsp; · &nbsp; 16:9</div>
+          <div class="end-note">THE END &nbsp; · &nbsp; REPLAY TO RETURN</div>
+        </div>
+        <div class="controls">
+          <button class="icon-button play-button" id="play" aria-label="Pause film" title="Play / pause (Space)">
+            <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 6h3v12H8zM14 6h3v12h-3z"/></svg>
+            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5l10 7-10 7z"/></svg>
+          </button>
+          <button class="icon-button replay-button" id="replay" aria-label="Replay film from beginning" title="Replay (R)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 8a8 8 0 1 1-1 8M5 3v5h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="timeline-wrap" id="timeline-wrap">
+            <span class="timeline-tick" style="left:20.8333%"></span>
+            <span class="timeline-tick" style="left:47.9167%"></span>
+            <span class="timeline-tick" style="left:75%"></span>
+            <input id="timeline" type="range" min="0" max="48" step="0.01" value="0" aria-label="Film timeline" aria-valuetext="0 seconds of 48 seconds">
+          </div>
+          <div class="timecode"><span id="elapsed">00:00</span><span class="time-divider">/</span><span>00:48</span></div>
+          <div class="control-divider"></div>
+          <button class="icon-button sound-button" id="sound" aria-label="Enable generated soundtrack" aria-pressed="false" title="Sound (M)">
+            <svg class="sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4zM16 9l6 6M22 9l-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4zM15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-button" id="fullscreen" aria-label="Enter fullscreen" title="Fullscreen (F)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M4 16v4h4M20 16v4h-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </section>
+      <p id="error" class="error" role="alert"></p>
+      <p id="film-description" class="sr-only">A 48-second, wordless ink-wash film. A weary samurai returns to a ruined shrine and discovers its last living blossom. A storm takes the shape of an enormous ink wolf. He fights it, but each cut feeds the storm. He lowers his sword and shelters the small tree with his cloak. The wolf dissolves into birds; the tree blooms. Leaving his weapon beneath its branches, the samurai bows and walks into the morning mist. The film plays automatically without sound. Use the controls to pause, seek, replay, enable the synthesized soundtrack, or enter fullscreen.</p>
+      <p id="chapter-announcement" class="sr-only" aria-live="polite"></p>
+      <section class="afterword" aria-label="Film chapters">
+        <div>
+          <p class="afterword-quote">Not every victory is won by the sword.</p>
+          <p class="afterword-note">A wordless story of letting go. &nbsp; Sound is optional.</p>
+        </div>
+        <nav class="chapters" aria-label="Jump to chapter">
+          <button class="chapter" data-time="0" aria-current="true"><span>01 &nbsp; / &nbsp; 00:00</span><strong>The return</strong></button>
+          <button class="chapter" data-time="10" aria-current="false"><span>02 &nbsp; / &nbsp; 00:10</span><strong>The storm</strong></button>
+          <button class="chapter" data-time="23" aria-current="false"><span>03 &nbsp; / &nbsp; 00:23</span><strong>The choice</strong></button>
+          <button class="chapter" data-time="36" aria-current="false"><span>04 &nbsp; / &nbsp; 00:36</span><strong>The bloom</strong></button>
+        </nav>
+      </section>
+    </main>
+    <footer class="colophon">
+      <span>Entirely drawn in code. &nbsp; Never pre-rendered.</span>
+      <span class="keyboard-help">Space: pause &nbsp; R: replay &nbsp; M: sound &nbsp; ← →: seek</span>
+      <span>HTML / Canvas / JavaScript</span>
+    </footer>
+  </div>
+  <script>
+    "use strict";
+    (() => {
+      const W = 1600, H = 900, DURATION = 48;
+      const INK = "#252723", PAPER = "#f0eddf", RED = "#a25449";
+      const canvas = document.getElementById("film");
+      const ctx = canvas.getContext("2d", { alpha: false });
+      const player = document.getElementById("player");
+      const playButton = document.getElementById("play");
+      const timeline = document.getElementById("timeline");
+      const timelineWrap = document.getElementById("timeline-wrap");
+      const elapsed = document.getElementById("elapsed");
+      const sceneLabel = document.getElementById("scene-label");
+      const chapterAnnouncement = document.getElementById("chapter-announcement");
+      const chapters = [...document.querySelectorAll(".chapter")];
+      const error = document.getElementById("error");
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      if (!ctx) {
+        error.textContent = "This browser cannot create a Canvas drawing surface. Please open the film in a current browser.";
+        player.dataset.state = "unavailable";
+        player.querySelectorAll("button, input").forEach(control => { control.disabled = true; });
+        return;
+      }
+
+      const clamp = (n, a = 0, b = 1) => Math.max(a, Math.min(b, n));
+      const mix = (a, b, n) => a + (b - a) * n;
+      const smooth = (a, b, t) => { const n = clamp((t - a) / (b - a)); return n * n * (3 - 2 * n); };
+      const pulse = (t, start, end, edge = .6) => smooth(start, start + edge, t) * (1 - smooth(end - edge, end, t));
+      const TAU = Math.PI * 2;
+      const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+      function random(seed) {
+        let n = seed >>> 0;
+        return () => { n = (Math.imul(n, 1664525) + 1013904223) >>> 0; return n / 4294967296; };
+      }
+      function surface() {
+        const c = document.createElement("canvas");
+        c.width = W; c.height = H;
+        return c;
+      }
+      function polygon(g, points, fill = INK) {
+        g.fillStyle = fill; g.beginPath();
+        points.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+        g.closePath(); g.fill();
+      }
+      function line(g, points, width = 1, color = INK, alpha = 1) {
+        g.save(); g.globalAlpha *= alpha; g.strokeStyle = color;
+        g.lineWidth = width; g.lineCap = "round"; g.lineJoin = "round"; g.beginPath();
+        points.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+        g.stroke(); g.restore();
+      }
+      function brush(g, points, width, alpha = 1, color = INK) {
+        g.save(); g.globalAlpha *= alpha;
+        line(g, points, width, color, .78);
+        for (let i = 0; i < 4; i++) {
+          const offset = (i - 1.5) * width * .17;
+          line(g, points.map(([x, y], j) => [x + Math.sin(j * 2.3 + i) * width * .09, y + offset]), width * (.1 + .07 * hash(i + points.length)), color, .38);
+        }
+        g.restore();
+      }
+      function ellipse(g, x, y, rx, ry, fill, alpha = 1, rotation = 0) {
+        g.save(); g.globalAlpha *= alpha; g.fillStyle = fill; g.beginPath();
+        g.ellipse(x, y, rx, ry, rotation, 0, TAU); g.fill(); g.restore();
+      }
+
+      const paperTexture = surface();
+      const grain = paperTexture.getContext("2d");
+      const paperRandom = random(4129);
+      for (let i = 0; i < 65000; i++) {
+        const v = paperRandom();
+        grain.fillStyle = v > .5 ? "rgba(55,51,33,.045)" : "rgba(255,255,244,.17)";
+        grain.fillRect(paperRandom() * W, paperRandom() * H, .4 + paperRandom() * 1.7, .3 + paperRandom() * 1.4);
+      }
+      for (let i = 0; i < 1700; i++) {
+        const x = paperRandom() * W, y = paperRandom() * H;
+        line(grain, [[x, y], [x + paperRandom() * 9 - 4, y + paperRandom() * 2]], .45, "#716e56", .08);
+      }
+      const dryTexture = document.createElement("canvas");
+      dryTexture.width = 512; dryTexture.height = 512;
+      const dry = dryTexture.getContext("2d"), dryRandom = random(118);
+      for (let i = 0; i < 5700; i++) {
+        const x = dryRandom() * 512, y = dryRandom() * 512;
+        dry.fillStyle = `rgba(240,237,223,${.1 + dryRandom() * .6})`;
+        dry.fillRect(x,y,.3 + dryRandom() * 2,1 + dryRandom() * 7);
+      }
+      for (let i = 0; i < 210; i++) {
+        const x = dryRandom() * 512, y = dryRandom() * 512;
+        line(dry,[[x,y],[x-3,y+20+dryRandom()*90]],.4+dryRandom(),PAPER,.12+dryRandom()*.25);
+      }
+      function dryBrush(g, x, y, width, height, opacity = .28) {
+        // The current silhouette path masks the pigment's dry-brush gaps.
+        g.save(); g.clip(); g.globalAlpha *= opacity; g.drawImage(dryTexture,x,y,width,height); g.restore();
+      }
+      const washTexture = surface();
+      const wash = washTexture.getContext("2d");
+      for (let i = 0; i < 55; i++) {
+        const x = paperRandom() * W, y = paperRandom() * H, radius = 45 + paperRandom() * 270;
+        const gradient = wash.createRadialGradient(x, y, 0, x, y, radius);
+        gradient.addColorStop(0, `rgba(115,119,99,${.012 + paperRandom() * .022})`);
+        gradient.addColorStop(1, "rgba(115,119,99,0)");
+        wash.fillStyle = gradient; wash.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+      }
+
+      function mountain(seed, baseline, peaks, opacity) {
+        const image = surface(), g = image.getContext("2d"), rng = random(seed);
+        const ridge = [];
+        for (let x = -100; x <= 1700; x += 8) {
+          let height = 0;
+          for (const [center, spread, rise] of peaks) height += rise * Math.exp(-Math.pow((x - center) / spread, 2));
+          ridge.push([x, baseline - height + (rng() - .5) * 13 + Math.sin(x * .04) * 4]);
+        }
+        const gradient = g.createLinearGradient(0, baseline - 500, 0, baseline + 50);
+        gradient.addColorStop(0, `rgba(65,67,62,${opacity})`);
+        gradient.addColorStop(.65, `rgba(101,104,96,${opacity * .55})`);
+        gradient.addColorStop(1, "rgba(124,126,116,0)");
+        polygon(g, [...ridge, [1700, baseline + 100], [-100, baseline + 100]], gradient);
+        line(g, ridge, 2, "#60635a", opacity * .34);
+        for (let i = 0; i < 190; i++) {
+          const index = Math.floor(rng() * (ridge.length - 2));
+          const [x, y] = ridge[index], length = 12 + rng() * 90;
+          brush(g, [[x, y + 5], [x - 8 - rng() * 22, y + length * .5], [x - 20 - rng() * 35, y + length]], 1 + rng() * 8, opacity * .18, "#5a5d54");
+        }
+        return image;
+      }
+      const distantMountain = mountain(6, 590, [[230, 220, 230], [700, 250, 310], [1160, 330, 220]], .16);
+      const middleMountain = mountain(12, 675, [[190, 220, 330], [420, 200, 190], [1450, 340, 310]], .29);
+      const nearMountain = mountain(23, 770, [[-80, 310, 410], [1650, 270, 450]], .38);
+
+      const groundTexture = surface(), ground = groundTexture.getContext("2d");
+      const groundRandom = random(392);
+      const groundGradient = ground.createLinearGradient(0, 698, 0, 900);
+      groundGradient.addColorStop(0, "rgba(84,88,78,0)");
+      groundGradient.addColorStop(.6, "rgba(83,87,77,.11)");
+      groundGradient.addColorStop(1, "rgba(73,78,66,.2)");
+      polygon(ground, [[-100, 778], [330, 727], [700, 765], [1170, 734], [1700, 750], [1700, 950], [-100, 950]], groundGradient);
+      brush(ground, [[-80, 812], [270, 751], [680, 774], [1000, 744], [1350, 751], [1700, 792]], 9, .17);
+      brush(ground, [[400, 912], [654, 834], [860, 790], [1070, 753]], 50, .09);
+      brush(ground, [[423, 917], [657, 841], [833, 797], [1070, 755]], 2, .18);
+      for (let i = 0; i < 230; i++) {
+        const x = groundRandom() * W, y = 757 + groundRandom() * 160;
+        line(ground, [[x, y], [x + 3 + groundRandom() * 17, y - groundRandom() * 2]], .4 + groundRandom() * 1.5, INK, .08 + groundRandom() * .14);
+      }
+      const particles = Array.from({ length: 130 }, (_, i) => ({
+        x: hash(i * 7 + 1) * 1900, y: hash(i * 3 + 10) * 1000,
+        size: 1 + hash(i * 11 + 5) * 4, speed: 17 + hash(i * 13 + 2) * 65, phase: hash(i + 3) * TAU
+      }));
+      const grassBlades = Array.from({ length: 108 }, (_, i) => {
+        const side = i < 54 ? 0 : 1;
+        return { x: side ? 1360 + hash(i * 7) * 310 : -55 + hash(i * 7) * 350,
+          y: 850 + hash(i * 9) * 100, h: 40 + hash(i * 11) * 190, lean: (hash(i * 5) - .5) * 75, seed: i };
+      });
+      const slashTimes = [15.1, 18.45, 21.1];
+
+      function atmosphere(t) {
+        const storm = smooth(9, 13, t) * (1 - smooth(31, 36, t));
+        const dawn = smooth(35, 43, t);
+        return { storm, dawn, wind: .3 + storm * 2.9 };
+      }
+      function background(t, storm, dawn) {
+        ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+        ctx.drawImage(washTexture, 0, 0);
+        const glow = ctx.createRadialGradient(1180, 250, 15, 1180, 250, 510);
+        glow.addColorStop(0, `rgba(255,251,221,${.28 + dawn * .35})`);
+        glow.addColorStop(1, "rgba(255,251,221,0)");
+        ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+        ellipse(ctx, 1193, 255, 72, 72, "#fcfaed", .58 * (1 - storm * .9));
+        ctx.save(); ctx.translate(Math.sin(t * .025) * 5, 0); ctx.drawImage(distantMountain, 0, 0); ctx.restore();
+        ctx.drawImage(middleMountain, 0, 0);
+        for (let i = 0; i < 6; i++) {
+          const y = 480 + i * 39 + Math.sin(t * .2 + i) * 6;
+          const x = -300 + ((t * (9 + i * 2) + i * 313) % 1950);
+          const gradient = ctx.createLinearGradient(x, 0, x + 730, 0);
+          gradient.addColorStop(0, "rgba(245,243,230,0)");
+          gradient.addColorStop(.4, "rgba(245,243,230,.48)");
+          gradient.addColorStop(1, "rgba(245,243,230,0)");
+          ellipse(ctx, x + 365, y, 365, 18 + i * 2, gradient, .7);
+        }
+        ctx.drawImage(nearMountain, 0, 0);
+        if (storm > .01) {
+          const cloud = ctx.createLinearGradient(0, 0, 0, 680);
+          cloud.addColorStop(0, `rgba(36,39,34,${storm * .32})`);
+          cloud.addColorStop(1, "rgba(36,39,34,0)");
+          ctx.fillStyle = cloud; ctx.fillRect(0, 0, W, H);
+          for (let i = 0; i < 13; i++) {
+            ctx.save(); ctx.globalAlpha = storm * (.03 + hash(i) * .035);
+            const y = 80 + i * 26, drift = Math.sin(t * .23 + i) * 70;
+            ctx.fillStyle = INK; ctx.beginPath();
+            ctx.moveTo(-100, y); ctx.bezierCurveTo(300, y - 70 + drift, 730, y + 130, 1710, y - 10);
+            ctx.bezierCurveTo(1320, y + 85, 390, y + 100 + drift, -100, y + 40); ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+      function shrine(t, storm) {
+        ctx.save(); ctx.translate(350, 709); ctx.rotate(-.055);
+        brush(ctx, [[-77, 0], [-72, -162]], 16, .77);
+        brush(ctx, [[70, 0], [68, -135]], 13, .63);
+        polygon(ctx, [[-115,-172],[-79,-182],[-10,-179],[37,-175],[83,-175],[116,-182],[100,-166],[33,-159],[-74,-163]], INK);
+        brush(ctx, [[-94,-141],[73,-137]], 10, .75);
+        line(ctx, [[-69,-154],[-69,-22]], 2, PAPER, .28);
+        line(ctx, [[65,-125],[65,-16]], 1, PAPER, .22);
+        line(ctx, [[0,-168],[1,-143]], 5, INK, .76);
+        ctx.restore();
+        for (let i = 0; i < 5; i++) {
+          brush(ctx, [[280-i*11, 715+i*12], [428+i*13, 716+i*12]], 3 + i, .12 + i * .03);
+        }
+        brush(ctx, [[459,722],[511,749],[534,745]], 10, .4);
+        brush(ctx, [[477,731],[489,700]], 7, .38);
+        const flag = Math.sin(t * (2 + storm) + 1) * (3 + storm * 8);
+        ctx.save(); ctx.globalAlpha = .35; ctx.fillStyle = INK; ctx.beginPath();
+        ctx.moveTo(285, 557); ctx.bezierCurveTo(262, 577, 275 + flag, 590, 244 + flag, 615);
+        ctx.lineTo(259 + flag, 614); ctx.bezierCurveTo(287, 593, 276, 578, 285, 557); ctx.fill(); ctx.restore();
+      }
+      function rocks() {
+        const shapes = [
+          [1039, 759, 24, 12], [1082, 751, 21, 15], [1060, 734, 18, 14],
+          [215, 814, 56, 20], [1316, 793, 47, 15], [673, 761, 24, 8]
+        ];
+        for (const [x, y, rx, ry] of shapes) {
+          polygon(ctx, [[x-rx,y],[x-rx*.76,y-ry*.73],[x-rx*.3,y-ry],[x+rx*.58,y-ry*.77],[x+rx,y-ry*.17],[x+rx*.78,y+ry*.2],[x-rx*.73,y+ry*.15]], "#46533e");
+          brush(ctx, [[x-rx*.67,y-ry*.67],[x-rx*.22,y-ry*.79],[x+rx*.4,y-ry*.6]], 1, .5, PAPER);
+          ellipse(ctx, x, y + ry*.21, rx * 1.2, 2, INK, .12);
+        }
+      }
+      function tree(t, storm, dawn) {
+        const growth = smooth(35.5, 42.2, t);
+        const shelter = smooth(28.3, 30.4, t) * (1 - smooth(36.8, 39.4, t));
+        const bend = Math.sin(t * (2.2 + storm) + .4) * (.015 + storm * .085) * (1 - shelter * .85);
+        ctx.save(); ctx.translate(1145, 751); ctx.rotate(bend); ctx.scale(1 + growth * .45, 1 + growth * .36);
+        ellipse(ctx, -1, 1, 40 + growth * 30, 5, "#526447", .12);
+        brush(ctx, [[0,0],[-3,-25],[5,-58],[1,-96],[-9,-127],[-5,-158]], 7, .89);
+        brush(ctx, [[4,-51],[34,-84],[43,-117],[36,-141]], 4, .9);
+        brush(ctx, [[2,-94],[-26,-115],[-38,-148],[-32,-169]], 3, .83);
+        brush(ctx, [[-8,-128],[12,-143],[22,-173]], 2, .86);
+        brush(ctx, [[35,-96],[57,-105],[64,-120]], 2, .85);
+        line(ctx, [[-2,-3],[-1,-27],[7,-57]], 1, PAPER, .5);
+        if (growth > 0) {
+          ctx.save(); ctx.globalAlpha = growth;
+          brush(ctx, [[-30,-132],[-58,-147],[-66,-170],[-86,-179]], 2.4, .85);
+          brush(ctx, [[40,-119],[70,-142],[92,-148],[100,-165]], 2.2, .9);
+          brush(ctx, [[-4,-155],[-10,-185],[11,-204],[30,-212]], 2.1, .9);
+          brush(ctx, [[68,-141],[61,-170],[73,-191]], 1.4, .83);
+          ctx.restore();
+        }
+        blossom(36, -143, 5.8, 0, .92);
+        const positions = [[-32,-170],[-5,-158],[22,-175],[-37,-148],[65,-121],[-67,-171],[-85,-179],[-53,-151],[90,-149],[100,-166],[71,-142],[61,-169],[74,-191],[-9,-184],[12,-204],[30,-212],[15,-145],[47,-117],[-23,-114]];
+        positions.forEach(([x,y], i) => {
+          const opening = smooth(35.8 + i * .14, 38.4 + i * .14, t);
+          if (opening > 0) blossom(x, y, (3.4 + hash(i) * 2.5) * opening, i * 2, opening * .76);
+        });
+        ctx.restore();
+        if (t > 7.2 && t < 29.4) {
+          const age = t - 7.2;
+          const x = 1172 - age * (4 + storm * 5), y = 600 + age * 6.5 + Math.sin(age * 1.5) * 13;
+          ctx.save(); ctx.translate(x, Math.min(741, y)); ctx.rotate(age * 1.3);
+          ellipse(ctx, 0, 0, 4.4, 2, RED, .65); ctx.restore();
+        }
+        if (dawn > .1) {
+          for (let i = 0; i < 13; i++) {
+            const age = (t - 37 + hash(i * 3) * 7) % 7;
+            if (age < 0) continue;
+            const a = clamp(dawn * .8) * Math.sin(age / 7 * Math.PI);
+            const x = 1120 + hash(i * 8) * 130 - age * 32;
+            const y = 495 + hash(i * 5) * 100 + age * 20;
+            ellipse(ctx, x, y, 3 + hash(i) * 2, 1.8, RED, a, age * 1.4 + i);
+          }
+        }
+      }
+      function blossom(x, y, size, phase, opacity) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(phase); ctx.globalAlpha *= opacity;
+        for (let p = 0; p < 5; p++) {
+          const angle = p * TAU / 5;
+          ellipse(ctx, Math.cos(angle)*size*.65, Math.sin(angle)*size*.65, size*.64, size*.48, RED, .8, angle);
+        }
+        ellipse(ctx, 0, 0, size * .28, size * .28, "#e9d9bd", .8);
+        ctx.restore();
+      }
+
+      function heroPose(t) {
+        let x = mix(595, 985, smooth(0, 7.1, t));
+        let y = 751, lean = -.045, stride = (1 - smooth(6.4, 7.4, t)), crouch = 0;
+        let attack = 0, bladeAngle = -.85, armed = t >= 11.7 && t < 27.7, guard = 0, bow = 0, facing = 1;
+        if (t >= 10 && t < 23) {
+          const draw = smooth(10.6, 12.7, t);
+          x += draw * 18;
+          lean = -.05 + draw * .08;
+          for (let i = 0; i < slashTimes.length; i++) {
+            const p = (t - slashTimes[i]) / .88;
+            if (p >= -.55 && p <= 1.8) {
+              const windup = pulse(p, -.55, .1, .25);
+              const cut = pulse(p, 0, 1.8, .25);
+              const direction = i % 2 ? -1 : 1;
+              attack = Math.max(attack, cut);
+              x += cut * (i === 2 ? 28 : 106);
+              lean += cut * .21 - windup * .11;
+              bladeAngle = mix(-1.9 * direction, .6 * direction, smooth(-.1, .7, p));
+              y -= Math.sin(clamp(p) * Math.PI) * (i === 1 ? 35 : 7);
+            }
+          }
+          const impact = smooth(21.7, 22.2, t);
+          x -= impact * 79; crouch = impact * .8; lean = mix(lean, -.28, impact);
+          bladeAngle = mix(bladeAngle, .4, impact);
+        }
+        if (t >= 23) {
+          x = mix(924, 1066, smooth(25.8, 29.5, t));
+          crouch = mix(.8, .07, smooth(24.8, 26.4, t));
+          crouch = mix(crouch, .92, smooth(28, 30, t));
+          crouch *= 1 - smooth(37.4, 40, t);
+          guard = smooth(28.4, 30.5, t) * (1 - smooth(37.2, 39.8, t));
+          lean = mix(-.12, .32, guard);
+          bladeAngle = mix(.4, -2.7, smooth(26, 27.7, t));
+          stride = pulse(t, 26.2, 29.4, .6) * .5;
+          bow = pulse(t, 40, 42.8, .9);
+          if (t > 42.5) {
+            facing = -1;
+            x -= smooth(42.5, 48, t) * 340;
+            stride = smooth(42.5, 43.1, t) * .8;
+          }
+        }
+        return { x, y, lean, stride, crouch, attack, bladeAngle, armed, guard, bow, facing };
+      }
+      function limb(shoulder, elbow, hand, width, fill = INK) {
+        const points = [shoulder, elbow, hand];
+        for (let i = 0; i < 2; i++) {
+          const [a, b] = [points[i], points[i+1]], dx = b[0] - a[0], dy = b[1] - a[1];
+          const distance = Math.hypot(dx, dy) || 1, nx = -dy / distance, ny = dx / distance;
+          const w1 = width * (i ? .61 : 1), w2 = width * (i ? .29 : .66);
+          polygon(ctx, [[a[0]+nx*w1,a[1]+ny*w1],[b[0]+nx*w2,b[1]+ny*w2],[b[0]-nx*w2,b[1]-ny*w2],[a[0]-nx*w1,a[1]-ny*w1]], fill);
+          ellipse(ctx, b[0], b[1], w2, w2, fill);
+        }
+      }
+      function sword(x, y, angle, opacity = 1) {
+        ctx.save(); ctx.globalAlpha *= opacity; ctx.translate(x, y); ctx.rotate(angle);
+        brush(ctx, [[-23,0],[3,0]], 5, 1);
+        for (let i = 0; i < 5; i++) line(ctx, [[-21+i*4,-2],[-19+i*4,2]], .9, PAPER, .55);
+        ellipse(ctx, 3, 0, 2, 8, INK);
+        ctx.fillStyle = "#b7c0ae"; ctx.beginPath(); ctx.moveTo(7,-2);
+        ctx.quadraticCurveTo(80,-4,146,-14); ctx.lineTo(137,-6);
+        ctx.quadraticCurveTo(72,1,7,2); ctx.fill();
+        line(ctx, [[7,-2],[70,-4],[115,-9],[146,-14]], 1.3, "#faf9ee", .95);
+        line(ctx, [[7,3],[75,0],[137,-6]], 1.4, INK, .84);
+        ctx.restore();
+      }
+      function samurai(t, storm) {
+        const p = heroPose(t);
+        const walk = Math.sin(t * 7.1) * p.stride;
+        const bob = Math.cos(t * 14.2) * p.stride * 2;
+        const knee = p.crouch * 49;
+        const disappear = 1 - smooth(46.1, 48, t) * .72;
+        ellipse(ctx, p.x, p.y + 2, 55 + p.crouch * 14, 6, "#24311f", .17 * disappear);
+        ctx.save(); ctx.globalAlpha = disappear; ctx.translate(p.x, p.y + bob); ctx.scale(p.facing * 1.08, 1.08);
+        const wind = Math.sin(t * (3 + storm) + 1.8) * (6 + storm * 10);
+        const legTop = -77 + knee;
+        const leftFoot = -23 - walk * 22 - p.attack * 16, rightFoot = 24 + walk * 22 + p.attack * 20;
+        polygon(ctx, [[-25,legTop],[-1,legTop+6],[-9-walk*9,-38+knee*.4],[leftFoot+9,-5],[leftFoot-13,-5],[-39-walk*13,-34+knee*.4]]);
+        dryBrush(ctx,-65,-85,120,85);
+        polygon(ctx, [[-1,legTop],[26,legTop-2],[35+walk*8,-34+knee*.3],[rightFoot+10,-6],[rightFoot-12,-6],[5+walk*9,-32+knee*.3]], "#2e372b");
+        dryBrush(ctx,-65,-85,120,85);
+        line(ctx, [[-17,legTop+12],[-23-walk*11,-37+knee*.2],[leftFoot,-11]], 1.3, PAPER, .28);
+        line(ctx, [[13,legTop+10],[22+walk*8,-35+knee*.2],[rightFoot,-13]], 1.3, PAPER, .25);
+        brush(ctx, [[leftFoot-14,-3],[leftFoot+13,-2]], 6, .9);
+        brush(ctx, [[rightFoot-11,-3],[rightFoot+16,-2]], 6, .93);
+        line(ctx, [[leftFoot-6,-8],[leftFoot+6,-7]], 2, PAPER, .45);
+        line(ctx, [[rightFoot-5,-8],[rightFoot+6,-7]], 2, PAPER, .45);
+        ctx.save(); ctx.translate(0, knee); ctx.rotate(p.lean + p.bow * .65);
+        const cloakReach = 48 + storm * 12 + p.guard * 48;
+        ctx.fillStyle = "#273025"; ctx.beginPath();
+        ctx.moveTo(-26,-165);
+        ctx.bezierCurveTo(-60,-141,-cloakReach-10,-136+wind,-cloakReach-35,-100+wind);
+        ctx.quadraticCurveTo(-cloakReach+4,-110+wind,-cloakReach-12,-75+wind*.6);
+        ctx.lineTo(-cloakReach+12,-85+wind*.4);
+        ctx.quadraticCurveTo(-44,-65,-20,-75); ctx.lineTo(25,-103);
+        ctx.quadraticCurveTo(29,-154,-26,-165); ctx.fill();
+        dryBrush(ctx,-160,-180,220,140,.35);
+        brush(ctx, [[-31,-151],[-67,-129+wind*.4],[-cloakReach-16,-103+wind]], 2, .18, PAPER);
+        if (p.guard > .01) {
+          ctx.save(); ctx.globalAlpha *= p.guard;
+          ctx.fillStyle = "#303b2c"; ctx.beginPath();
+          ctx.moveTo(0,-166); ctx.bezierCurveTo(43,-224,104,-204+wind*.15,122,-137);
+          ctx.quadraticCurveTo(143,-105,153,-64); ctx.lineTo(135,-82);
+          ctx.lineTo(129,-69); ctx.quadraticCurveTo(88,-112,17,-103); ctx.fill();
+          dryBrush(ctx,0,-230,165,190,.35);
+          brush(ctx, [[31,-186],[78,-196],[123,-120],[139,-86]], 2, .25, PAPER);
+          ctx.restore();
+        }
+        polygon(ctx, [[-24,-167],[19,-169],[36,-140],[24,-103],[30,-76],[-27,-74],[-38,-109],[-41,-145]]);
+        dryBrush(ctx,-45,-175,90,110,.4);
+        polygon(ctx, [[-19,-157],[-4,-126],[19,-161],[10,-123],[20,-97],[-4,-110]], "#535b49");
+        line(ctx, [[-21,-153],[-5,-126],[17,-158]], 2, PAPER, .53);
+        line(ctx, [[-22,-116],[-15,-90]], 1.4, PAPER, .26);
+        line(ctx, [[22,-124],[12,-94]], 1.2, PAPER, .25);
+        brush(ctx, [[-27,-88],[28,-91]], 7, .88, "#131d16");
+        line(ctx, [[-26,-89],[26,-92]], 1.5, PAPER, .6);
+        polygon(ctx, [[4,-88],[13,-86],[17,-78],[6,-79]], "#a5aa95");
+        if (t < 28.1) {
+          brush(ctx, [[11,-93],[-80,-60]], 6, .93);
+          line(ctx, [[-2,-89],[-72,-63]], 1, PAPER, .25);
+          if (!p.armed) {
+            brush(ctx, [[13,-96],[42,-107]], 5, .95);
+            for (let j = 0; j < 4; j++) line(ctx, [[21+j*5,-101-j*1.4],[22+j*5,-97-j*1.4]], 1, PAPER, .5);
+          }
+        }
+        let frontHand = [29 + walk*8, -108], frontElbow = [40,-133];
+        let rearHand = [-33-walk*8,-106], rearElbow = [-43,-132];
+        const draw = pulse(t, 10.5, 13.4, .8);
+        frontHand = [mix(frontHand[0],49,draw),mix(frontHand[1],-139,draw)];
+        if (p.armed) {
+          frontHand = [44 + p.attack*28, -145 + p.attack*21];
+          frontElbow = [44+p.attack*3, -143+p.attack*8];
+          rearHand = [frontHand[0]-17,frontHand[1]+10];
+          rearElbow = [-4+p.attack*26,-124];
+        }
+        if (t > 7.4 && t < 10.2) {
+          const notice = pulse(t, 7.4, 10.2, .7);
+          frontHand = [mix(frontHand[0],59,notice),mix(frontHand[1],-134,notice)];
+          frontElbow = [39,-122];
+        }
+        if (p.guard > .01) {
+          frontHand = [mix(frontHand[0],74,p.guard),mix(frontHand[1],-205,p.guard)];
+          frontElbow = [mix(frontElbow[0],40,p.guard),mix(frontElbow[1],-180,p.guard)];
+          rearHand = [-13,-107]; rearElbow = [-32,-129];
+        }
+        limb([-24,-155],rearElbow,rearHand,14,"#30392d");
+        line(ctx, [[rearElbow[0]-3,rearElbow[1]],rearHand], 1, PAPER, .24);
+        limb([23,-155],frontElbow,frontHand,14);
+        line(ctx, [[frontElbow[0],frontElbow[1]+4],[frontHand[0]-7,frontHand[1]+4]], 1.3, PAPER, .29);
+        ellipse(ctx, frontHand[0], frontHand[1], 4.3, 4.3, "#626956");
+        if (p.armed) sword(frontHand[0],frontHand[1],p.bladeAngle);
+        polygon(ctx, [[-14,-198],[9,-198],[18,-177],[10,-164],[-10,-164],[-21,-180]], "#202a22");
+        polygon(ctx, [[11,-184],[22,-180],[13,-174],[14,-169],[6,-170]], "#9da58e");
+        line(ctx, [[9,-181],[16,-182]], 1.6, PAPER, .8);
+        polygon(ctx, [[-5,-181],[-13,-172],[-31,-161],[-18,-158],[-4,-169]], "#202a22");
+        const hatTilt = .045 + p.bow * .12;
+        ctx.save(); ctx.translate(-4,-199); ctx.rotate(hatTilt);
+        polygon(ctx, [[-68,10],[-48,-2],[-14,-22],[-5,-25],[10,-21],[52,0],[69,11],[39,14],[-25,15]], "#323b2c");
+        dryBrush(ctx,-70,-26,140,45,.34);
+        brush(ctx, [[-65,11],[-23,14],[27,13],[68,10]], 3, 1, "#162119");
+        for (let i = -5; i <= 5; i++) {
+          line(ctx, [[-6+i*1.5,-21],[i*11.8,9]], 1 + hash(i+12)*.5, PAPER, .19 + hash(i)*.16);
+        }
+        line(ctx, [[-47,2],[-18,4],[20,3],[48,1]], 1, PAPER, .25);
+        ctx.restore();
+        line(ctx, [[-35,-192],[-15,-166],[8,-181]], 1.1, "#a2a992", .54);
+        ctx.restore(); ctx.restore();
+      }
+      function restingSword(t) {
+        const a = smooth(27.5, 29, t);
+        if (!a) return;
+        ctx.save(); ctx.globalAlpha = a; ctx.translate(1088,765); ctx.rotate(-.13);
+        brush(ctx, [[-43,0],[48,0]], 6, .95);
+        line(ctx, [[-39,-2],[46,-2]], 1, PAPER, .35);
+        ellipse(ctx, 48, 0, 2, 9, INK);
+        brush(ctx, [[50,0],[76,0]], 5, .95);
+        for (let i = 0; i < 5; i++) line(ctx, [[53+i*4,-2],[55+i*4,2]], 1, PAPER, .6);
+        ctx.restore();
+      }
+      function wolf(t, storm) {
+        const birth = smooth(10.4, 13.4, t);
+        const dissolve = smooth(31.4, 35.7, t);
+        const visibility = birth * (1 - dissolve);
+        if (visibility <= .001) return;
+        const rage = smooth(15, 22, t);
+        const lunge = pulse(t, 30.5, 33.4, 1);
+        let x = mix(1532, 1378, birth) - lunge * 203;
+        let y = 738 - Math.sin(t * 1.7) * 5;
+        for (const at of slashTimes) x += pulse(t, at+.2, at+1.1, .25)*45;
+        ctx.save(); ctx.translate(x,y); ctx.scale(1.03 + rage*.16,1.03 + rage*.16); ctx.globalAlpha = visibility;
+        const ripple = Math.sin(t*3.1)*12;
+        for (let layer = 3; layer >= 0; layer--) {
+          ctx.save(); ctx.globalAlpha *= layer ? .055 : .84; ctx.translate(layer*9, -layer*5);
+          ctx.fillStyle = INK; ctx.beginPath(); ctx.moveTo(-172,-237);
+          ctx.lineTo(-143,-253); ctx.lineTo(-145,-308); ctx.lineTo(-113,-278);
+          ctx.lineTo(-93,-315); ctx.lineTo(-81,-268);
+          ctx.bezierCurveTo(-27,-250,16,-218,76,-202);
+          ctx.bezierCurveTo(146,-192,215,-242+ripple,292,-203+ripple);
+          ctx.quadraticCurveTo(257,-212+ripple,232,-174);
+          ctx.quadraticCurveTo(294,-194,327,-151+ripple);
+          ctx.quadraticCurveTo(260,-163,233,-131);
+          ctx.bezierCurveTo(188,-93,130,-99,75,-83);
+          ctx.lineTo(82,-28); ctx.lineTo(114,-5); ctx.lineTo(72,1); ctx.lineTo(48,-29);
+          ctx.lineTo(20,-96); ctx.lineTo(-12,-102); ctx.lineTo(-33,-38);
+          ctx.lineTo(-25,-4); ctx.lineTo(-61,0); ctx.lineTo(-60,-40);
+          ctx.lineTo(-52,-136); ctx.quadraticCurveTo(-82,-177,-111,-195);
+          ctx.lineTo(-143,-181); ctx.lineTo(-176,-204); ctx.lineTo(-185,-216);
+          ctx.lineTo(-155,-213); ctx.lineTo(-126,-220); ctx.lineTo(-177,-228); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+        dryBrush(ctx,-190,-325,530,335,.38);
+        polygon(ctx, [[-151,-242],[-129,-248],[-140,-237]], PAPER);
+        polygon(ctx, [[-171,-215],[-155,-214],[-160,-205]], PAPER);
+        polygon(ctx, [[-143,-213],[-132,-214],[-137,-203]], PAPER);
+        brush(ctx, [[-81,-261],[-43,-230],[-12,-209],[45,-186]], 4, .13, PAPER);
+        brush(ctx, [[-74,-258],[-49,-248]], 2, .22, PAPER);
+        for (let i = 0; i < 19; i++) {
+          const phase = i * 1.71, start = 30 + i * 10;
+          const endX = start + 120 + hash(i) * 220;
+          const startY = -175 + hash(i * 2) * 130;
+          const wind = Math.sin(t * 2 + phase) * 28;
+          ctx.save(); ctx.globalAlpha *= .12 + hash(i * 7) * .19;
+          ctx.strokeStyle = INK; ctx.lineWidth = 1 + hash(i * 9) * 14; ctx.lineCap = "round"; ctx.beginPath();
+          ctx.moveTo(start,startY); ctx.bezierCurveTo(start+60,startY-30+wind,endX-65,startY+wind,endX,startY-50+wind); ctx.stroke();
+          ctx.restore();
+        }
+        if (dissolve > 0) {
+          ctx.save();
+          for (let i = 0; i < 100; i++) {
+            const fade = smooth(hash(i)*.8, hash(i)*.8+.2, dissolve);
+            if (!fade) continue;
+            ellipse(ctx, -160 + hash(i*7)*440, -310+hash(i*9)*270, fade*(3+hash(i*11)*16), fade*(2+hash(i*13)*9), PAPER, .8);
+          }
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+      function birds(t) {
+        const liberation = smooth(31.7, 36, t);
+        const distant = pulse(t, 0, 11, 1.5);
+        if (!liberation && !distant) return;
+        const count = liberation > 0 ? 21 : 7;
+        for (let i = 0; i < count; i++) {
+          const age = Math.max(0,t - 31.5 - hash(i)*2);
+          const born = smooth(31.5+hash(i)*2,32.4+hash(i)*2,t);
+          const x = liberation > 0 ? 1330 - age*(42+hash(i)*29) + i*12 : 825+i*38-t*13;
+          const y = liberation > 0 ? 538-age*(28+hash(i*3)*14)-hash(i)*75 : 355+Math.sin(i)*18;
+          const size = liberation > 0 ? mix(15,4,clamp(age/10)) : 5+hash(i)*3;
+          const flap = Math.sin(t*7+i*2)*size*.64;
+          const alpha = liberation > 0 ? born * (1-smooth(41,46,t))*.66 : distant*.34;
+          brush(ctx, [[x-size,y-flap],[x-size*.45,y-size*.28],[x,y],[x+size*.45,y-size*.28],[x+size,y-flap]], size*.14+.5, alpha);
+        }
+      }
+      function weather(t, storm, wind) {
+        if (storm > .01) {
+          ctx.save(); ctx.globalAlpha = storm * .19;
+          for (let i = 0; i < 115; i++) {
+            const x = ((hash(i*13)*2000 - t*(150+hash(i)*190)) % 2000 + 2000) % 2000 - 200;
+            const y = ((hash(i*7)*1100 + t*(290+hash(i)*140)) % 1100) - 100;
+            line(ctx, [[x,y],[x-12-hash(i)*19,y+15+hash(i)*28]], .5+hash(i)*.8, "#3b4b34", .7);
+          }
+          ctx.restore();
+        }
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          const x = ((p.x-t*p.speed*wind) % 1900+1900)%1900-150;
+          const y = p.y + Math.sin(t*.8+p.phase)*27;
+          const alpha = .1 + storm*.16;
+          if (i % 4 === 0) {
+            ctx.save(); ctx.translate(x,y); ctx.rotate(t*1.2+p.phase);
+            ctx.globalAlpha = alpha;
+            polygon(ctx, [[-p.size*2,0],[0,-p.size*.65],[p.size*1.6,0],[0,p.size*.4]], "#45483f");
+            ctx.restore();
+          } else ellipse(ctx,x,y,p.size*.35,p.size*.7,INK,alpha);
+        }
+        if (storm > .3) {
+          for (let i = 0; i < 6; i++) {
+            const x = 1700 - ((t*230+i*297) % 2000), y = 670 + Math.sin(t+i)*30;
+            ctx.save(); ctx.globalAlpha = storm*.07;
+            ctx.strokeStyle = INK; ctx.lineWidth = 1.1; ctx.beginPath();
+            ctx.moveTo(x,y); ctx.bezierCurveTo(x-140,y-40,x-290,y+70,x-430,y+5); ctx.stroke(); ctx.restore();
+          }
+        }
+      }
+      function foreground(t, wind) {
+        for (const blade of grassBlades) {
+          const motion = Math.sin(t*(1.6+wind*.5)+blade.seed*.3)*wind*9;
+          const topX = blade.x + blade.lean + motion;
+          ctx.save(); ctx.globalAlpha = .25+hash(blade.seed*13)*.5; ctx.fillStyle = INK; ctx.beginPath();
+          ctx.moveTo(blade.x,blade.y);
+          ctx.quadraticCurveTo(blade.x+blade.lean*.15,blade.y-blade.h*.48,topX,blade.y-blade.h);
+          ctx.quadraticCurveTo(blade.x+blade.lean*.15+3,blade.y-blade.h*.4,blade.x+5,blade.y);
+          ctx.fill();
+          if (blade.seed % 7 === 0) {
+            const y = blade.y-blade.h;
+            brush(ctx, [[topX,y+12],[topX+motion*.2-3,y-28]], 3,.7);
+            for (let i = 0; i < 5; i++) line(ctx, [[topX,y-i*5],[topX-7+i,y-i*5-6]], 1.6, INK, .6);
+          }
+          ctx.restore();
+        }
+        // Foreground bamboo frames the wide shot without obscuring the characters.
+        for (let i = 0; i < 3; i++) {
+          const x = 60+i*56, bend = Math.sin(t*1.1+i)*wind*2;
+          brush(ctx, [[x,950],[x+15,685],[x+34+bend,462]], 7-i*1.4, .66-i*.1);
+          for (let j = 0; j < 4; j++) {
+            const y = 525+j*94, branchX = x+31-j*5;
+            line(ctx, [[branchX-6,y],[branchX+4,y-1]], 2, PAPER, .5);
+            const direction = j%2 ? 1 : -1;
+            brush(ctx, [[branchX,y],[branchX+direction*30,y-20],[branchX+direction*69,y-29+bend]], 1.4,.7);
+            for (let k = 0; k < 4; k++) {
+              const lx = branchX+direction*(18+k*12), ly = y-17-k*3;
+              polygon(ctx, [[lx,ly],[lx+direction*(9+k*2),ly-8],[lx+direction*(20+k*4),ly-28+bend],[lx+direction*7,ly-4]], "#39462f");
+            }
+          }
+        }
+      }
+      function slashes(t) {
+        slashTimes.forEach((at, index) => {
+          const age = t-at;
+          if (age < 0 || age > 1.15) return;
+          const progress = clamp(age/.32), fade = 1-smooth(.22,1.15,age);
+          const p = heroPose(t), centerX = p.x+65, centerY = p.y-130;
+          ctx.save(); ctx.translate(centerX,centerY); ctx.rotate(index%2 ? -.42 : .32);
+          ctx.globalAlpha = fade;
+          ctx.strokeStyle = "#f7f4e9"; ctx.lineCap = "round";
+          for (let strand = 0; strand < 5; strand++) {
+            ctx.lineWidth = (strand === 0 ? 14 : 1.8) * (1-strand*.09);
+            ctx.beginPath(); ctx.ellipse(0,0,224+strand*4,155+strand*5,-.45,-2.2,-2.2+progress*3.5);
+            ctx.stroke(); ctx.globalAlpha *= .77;
+          }
+          ctx.restore();
+          for (let i = 0; i < 39; i++) {
+            const angle = -2.5+hash(i*7+index)*4.1;
+            const distance = age*(90+hash(i*11)*350);
+            const x = centerX+100+Math.cos(angle)*distance, y = centerY-30+Math.sin(angle)*distance+age*age*70;
+            ellipse(ctx,x,y,(1+hash(i*5)*5)*fade,(1+hash(i)*2)*fade,INK,fade*.62,angle);
+          }
+        });
+      }
+      function brushTransition(t) {
+        for (const cut of [10,23,36]) {
+          const phase = (t-cut)/.8;
+          if (phase < -.5 || phase > .65) continue;
+          const alpha = Math.sin(clamp((phase+.5)/1.15)*Math.PI) * .24;
+          ctx.save(); ctx.globalAlpha = alpha;
+          for (let i = 0; i < 12; i++) {
+            const x = (phase+.5)*2300-i*58;
+            brush(ctx, [[x-220,-100],[x-75,310],[x+35,710],[x+110,1000]], 23+hash(i)*35,.36,"#626b55");
+          }
+          ctx.restore();
+        }
+      }
+      function titles(t) {
+        const introAlpha = pulse(t,-.6,6.6,1.35);
+        const endAlpha = smooth(44.3,46.3,t);
+        if (introAlpha > 0) {
+          ctx.save(); ctx.globalAlpha = introAlpha; ctx.fillStyle = "#30392b";
+          ctx.font = "16px Arial, sans-serif"; ctx.letterSpacing = "4px";
+          ctx.fillText("A STORY IN INK",303,252);
+          ctx.letterSpacing = "0px";
+          ctx.font = "76px Georgia, 'Times New Roman', serif"; ctx.fillText("The Last",296,342);
+          ctx.font = "italic 93px Georgia, 'Times New Roman', serif"; ctx.fillText("Blossom",294,429);
+          brush(ctx, [[302,462],[352,465],[406,462]], 2,.38);
+          ctx.font = "15px Georgia, serif"; ctx.fillStyle = "#707a63";
+          ctx.fillText("A film about the courage to lay a sword down.",302,502);
+          ctx.restore();
+        }
+        if (endAlpha > 0) {
+          ctx.save(); ctx.globalAlpha = endAlpha; ctx.fillStyle = "#374330";
+          ctx.font = "17px Arial, sans-serif"; ctx.letterSpacing = "4px";
+          ctx.fillText("THE LAST BLOSSOM",516,294); ctx.letterSpacing = "0px";
+          ctx.font = "italic 38px Georgia, 'Times New Roman', serif";
+          ctx.fillText("Let something live.",510,353);
+          ctx.fillStyle = RED; ctx.fillRect(514,382,25,27);
+          ctx.fillStyle = PAPER; ctx.font = "20px Georgia, serif"; ctx.fillText("花",517,404);
+          ctx.restore();
+        }
+      }
+      function camera(t) {
+        let zoom = mix(1,1.07,smooth(0,9.9,t)), x = mix(800,830,smooth(0,9.9,t)), y = 450;
+        if (t >= 10 && t < 23) { zoom = mix(1.08,1.2,smooth(10,22,t)); x = 1025; y = 484; }
+        if (t >= 23 && t < 28) {
+          const pull = smooth(24.8,28,t);
+          zoom = mix(1.9,1.25,pull); x = mix(1110,1035,pull); y = mix(624,545,pull);
+        }
+        if (t >= 28 && t < 36) { zoom = 1.25; x = 1035; y = 545; }
+        if (t >= 36) {
+          const pull = smooth(36,43.8,t);
+          zoom = mix(1.25,1,pull); x = mix(1035,800,pull); y = mix(545,450,pull);
+        }
+        if (!reducedMotion.matches) {
+          for (const at of slashTimes) {
+            const p = pulse(t,at,at+.6,.08);
+            x += Math.sin(t*74)*p*4; y += Math.cos(t*61)*p*2.6;
+          }
+        }
+        return { zoom, x, y };
+      }
+      function render(t) {
+        ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+        ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+        const { storm, dawn, wind } = atmosphere(t), cam = camera(t);
+        background(t,storm,dawn);
+        ctx.save(); ctx.translate(W/2,H/2); ctx.scale(cam.zoom,cam.zoom); ctx.translate(-cam.x,-cam.y);
+        ctx.drawImage(groundTexture,0,0);
+        shrine(t,storm); rocks(); wolf(t,storm); birds(t); tree(t,storm,dawn); restingSword(t); samurai(t,storm);
+        slashes(t); weather(t,storm,wind); foreground(t,wind);
+        ctx.restore();
+        ctx.save(); ctx.globalCompositeOperation = "multiply"; ctx.drawImage(paperTexture,0,0); ctx.restore();
+        const vignette = ctx.createRadialGradient(800,430,240,800,430,970);
+        vignette.addColorStop(0,"rgba(55,59,39,0)");
+        vignette.addColorStop(1,"rgba(55,59,39,.12)");
+        ctx.fillStyle = vignette; ctx.fillRect(0,0,W,H);
+        brushTransition(t); titles(t);
+        ctx.fillStyle = "rgba(51,58,43,.07)"; ctx.fillRect(0,0,W,13); ctx.fillRect(0,H-13,W,13);
+      }
+
+      class Soundtrack {
+        constructor() { this.context = null; this.master = null; this.windGain = null; this.enabled = false; this.note = -1; this.hit = -1; }
+        async enable() {
+          if (!this.context) {
+            const Audio = globalThis.AudioContext || globalThis.webkitAudioContext;
+            if (!Audio) throw new Error("Web Audio is not supported by this browser.");
+            this.context = new Audio();
+            this.master = this.context.createGain(); this.master.gain.value = 0; this.master.connect(this.context.destination);
+            const noise = this.context.createBuffer(1,this.context.sampleRate*4,this.context.sampleRate);
+            const data = noise.getChannelData(0), rng = random(517); let previous = 0;
+            for (let i = 0; i < data.length; i++) { previous = (previous + (rng()*2-1)*.035)/1.035; data[i] = previous*3; }
+            const source = this.context.createBufferSource(); source.buffer = noise; source.loop = true;
+            const filter = this.context.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = 700;
+            this.windGain = this.context.createGain(); this.windGain.gain.value = .07;
+            source.connect(filter); filter.connect(this.windGain); this.windGain.connect(this.master); source.start();
+          }
+          await this.context.resume(); this.enabled = true; this.note = -1; this.hit = -1;
+        }
+        audible(playing) {
+          if (!this.context) return;
+          this.master.gain.cancelScheduledValues(this.context.currentTime);
+          this.master.gain.setTargetAtTime(this.enabled && playing ? .65 : 0,this.context.currentTime,.12);
+        }
+        pluck(frequency, intensity = .14, length = 2.4) {
+          const now = this.context.currentTime, oscillator = this.context.createOscillator(), gain = this.context.createGain();
+          oscillator.type = "sine"; oscillator.frequency.setValueAtTime(frequency,now);
+          gain.gain.setValueAtTime(.001,now); gain.gain.linearRampToValueAtTime(intensity,now+.02);
+          gain.gain.exponentialRampToValueAtTime(.001,now+length);
+          oscillator.connect(gain); gain.connect(this.master); oscillator.start(now); oscillator.stop(now+length+.05);
+          oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+        }
+        update(t) {
+          if (!this.enabled || !this.context) return;
+          const storm = atmosphere(t).storm;
+          this.windGain.gain.setTargetAtTime(.065+storm*.12,this.context.currentTime,.2);
+          const note = Math.floor(t/3.2);
+          if (note !== this.note) {
+            this.note = note;
+            const scale = [146.83,196,220,293.66,196,164.81,146.83,110,146.83,196,220,293.66,329.63,293.66,196];
+            this.pluck(scale[note % scale.length],storm>.7 ? .07 : .12);
+            if (t>35) this.pluck(scale[note%scale.length]*2,.045,3);
+          }
+          const hit = slashTimes.findIndex(at => t>=at && t<at+.6);
+          if (hit !== this.hit) {
+            this.hit = hit;
+            if (hit >= 0) this.pluck(49+hit*7,.3,.65);
+          }
+        }
+      }
+
+      const soundtrack = new Soundtrack();
+      let time = 0, startTime = performance.now(), playing = true, frame = 0, lastChapter = -1, lastUiTime = -1;
+      const chapterStarts = [0,10,23,36];
+      const chapterNames = ["The return","The storm","The choice","The bloom"];
+      const numerals = ["I","II","III","IV"];
+      function currentTime() { return playing ? clamp((performance.now()-startTime)/1000,0,DURATION) : time; }
+      function updateUI(t, force = false) {
+        const second = Math.floor(t), chapter = t < 10 ? 0 : t < 23 ? 1 : t < 36 ? 2 : 3;
+        timeline.value = String(t); timelineWrap.style.setProperty("--progress",`${t/DURATION*100}%`);
+        if (force || second !== lastUiTime) {
+          lastUiTime = second; elapsed.textContent = `00:${String(second).padStart(2,"0")}`;
+          timeline.setAttribute("aria-valuetext",`${second} seconds of 48 seconds. ${chapterNames[chapter]}`);
+        }
+        if (chapter !== lastChapter) {
+          lastChapter = chapter; sceneLabel.textContent = `${numerals[chapter]}  /  ${chapterNames[chapter].toUpperCase()}`;
+          chapters.forEach((button,i) => button.setAttribute("aria-current",String(i===chapter)));
+          chapterAnnouncement.textContent = `Chapter ${chapter+1}: ${chapterNames[chapter]}`;
+        }
+      }
+      function tick() {
+        frame = 0; time = currentTime(); render(time); updateUI(time);
+        if (time >= DURATION) {
+          playing = false; player.dataset.state = "ended"; playButton.setAttribute("aria-label","Play film again");
+          soundtrack.audible(false); return;
+        }
+        if (playing) { soundtrack.update(time); frame = requestAnimationFrame(tick); }
+      }
+      function play() {
+        if (playing) return;
+        if (time >= DURATION) time = 0;
+        playing = true; startTime = performance.now()-time*1000;
+        player.dataset.state = "playing"; playButton.setAttribute("aria-label","Pause film");
+        soundtrack.audible(true);
+        if (!frame) frame = requestAnimationFrame(tick);
+      }
+      function pause() {
+        if (!playing) return;
+        time = currentTime(); playing = false;
+        if (frame) cancelAnimationFrame(frame); frame = 0;
+        player.dataset.state = time >= DURATION ? "ended" : "paused";
+        playButton.setAttribute("aria-label",time>=DURATION ? "Play film again" : "Play film");
+        soundtrack.audible(false); render(time); updateUI(time,true);
+      }
+      function seek(value) {
+        const requested = Number(value);
+        if (!Number.isFinite(requested)) throw new TypeError("Film time must be a finite number.");
+        time = clamp(requested,0,DURATION); startTime = performance.now()-time*1000;
+        soundtrack.note = -1; soundtrack.hit = -1;
+        if (time >= DURATION) {
+          playing = false; if (frame) cancelAnimationFrame(frame); frame = 0;
+          player.dataset.state = "ended"; playButton.setAttribute("aria-label","Play film again"); soundtrack.audible(false);
+        } else if (!playing) {
+          player.dataset.state = "paused"; playButton.setAttribute("aria-label","Play film");
+        }
+        render(time); updateUI(time,true);
+      }
+      function replay() { pause(); seek(0); play(); }
+      playButton.addEventListener("click",() => playing ? pause() : play());
+      document.getElementById("replay").addEventListener("click",replay);
+      timeline.addEventListener("input",event => seek(event.currentTarget.value));
+      chapters.forEach((button,i) => button.addEventListener("click",() => { seek(chapterStarts[i]); play(); }));
+      async function toggleSound() {
+        const button = document.getElementById("sound");
+        error.textContent = "";
+        if (soundtrack.enabled) {
+          soundtrack.enabled = false; soundtrack.audible(false);
+          button.setAttribute("aria-pressed","false"); button.setAttribute("aria-label","Enable generated soundtrack"); return;
+        }
+        try {
+          await soundtrack.enable(); soundtrack.audible(playing);
+          button.setAttribute("aria-pressed","true"); button.setAttribute("aria-label","Mute soundtrack");
+        } catch (cause) {
+          error.textContent = `The soundtrack could not start: ${cause instanceof Error ? cause.message : String(cause)} You can still watch the silent film.`;
+        }
+      }
+      async function toggleFullscreen() {
+        error.textContent = "";
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else {
+            if (!player.requestFullscreen) throw new Error("Fullscreen is not supported by this browser.");
+            await player.requestFullscreen();
+          }
+        } catch (cause) {
+          error.textContent = `Fullscreen could not open: ${cause instanceof Error ? cause.message : String(cause)}`;
+        }
+      }
+      document.getElementById("sound").addEventListener("click",toggleSound);
+      document.getElementById("fullscreen").addEventListener("click",toggleFullscreen);
+      document.addEventListener("fullscreenchange",() => {
+        document.getElementById("fullscreen").setAttribute("aria-label",document.fullscreenElement ? "Exit fullscreen" : "Enter fullscreen");
+      });
+      document.addEventListener("keydown",event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+        if (event.target instanceof HTMLElement && (event.target.matches("input, button, textarea, select, summary") || event.target.isContentEditable)) return;
+        const key = event.key.toLowerCase();
+        if ([" ","k","r","m","f","arrowleft","arrowright"].includes(key)) event.preventDefault();
+        if (key === " " || key === "k") playing ? pause() : play();
+        else if (key === "r") replay();
+        else if (key === "m") void toggleSound();
+        else if (key === "f") void toggleFullscreen();
+        else if (key === "arrowleft") seek(currentTime()-5);
+        else if (key === "arrowright") seek(currentTime()+5);
+      });
+      document.addEventListener("visibilitychange",() => { if (document.hidden) pause(); });
+      let resizeFrame = 0;
+      function resize() {
+        const bounds = canvas.getBoundingClientRect(), ratio = Math.min(devicePixelRatio || 1,1.75);
+        canvas.width = Math.max(1,Math.round(bounds.width*ratio));
+        canvas.height = Math.max(1,Math.round(canvas.width*H/W));
+        render(currentTime());
+      }
+      const observer = new ResizeObserver(() => {
+        if (resizeFrame) cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(() => { resizeFrame = 0; resize(); });
+      });
+      observer.observe(canvas);
+      globalThis.inkFilm = Object.freeze({
+        duration: DURATION, play, pause, replay, seek,
+        get time() { return currentTime(); },
+        get state() { return player.dataset.state; }
+      });
+      resize(); updateUI(0,true); frame = requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>
